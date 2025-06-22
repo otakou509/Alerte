@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
+-->
+
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Déclarer une alerte</title>
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+    .main-content {
+    margin-top: 80px; /* pour ne pas passer sous le header */
+    margin-right: 300px; /* pour laisser la place à la sidebar */
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 80px); /* hauteur de l'écran - header */
+}
+
+.main-content img {
+    max-width: 80%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+
+       /* HEADER */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 80px; /* ← définis une hauteur fixe */
+    background-color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+/* SIDEBAR POSITIONNÉE EN DESSOUS DU HEADER */
+.sidebar {
+    position: fixed;
+    top: 80px; /* ← commence juste après le header */
+    right: 0;
+    width: 300px;
+    height: calc(100% - 80px); /* ← hauteur totale moins la hauteur du header */
+    background-color: #1e1e1e;
+    overflow-y: auto; /* ← scroll si contenu dépasse */
+    padding: 20px;
+}
+
+/* CHAT BOX À L’INTÉRIEUR DE LA SIDEBAR */
+.chat-box {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    width: 100%;
+    margin: 0;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%; /* Donne la forme ronde */
+    object-fit: cover; /* Pour bien cadrer l'image */
+    border: 2px solid #ccc;
+}
+
+        header img {
+            height: 50px;
+            margin-right: 15px;
+        }
+
+        header h1 {
+            font-size: 20px;
+            color: #333;
+        }
+
+
+        .message {
+            margin: 10px 0;
+        }
+
+        .robot {
+            color: blue;
+        }
+
+        .user {
+            color: green;
+            text-align: right;
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 8px;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 10px 20px;
+        }
+        .right-image {
+    position: fixed;
+    top: 50px; /* ajuste la hauteur */
+    right: 20px;
+    width: 150px;
+    height: auto;
+    z-index: 1;
+}
+
+.right-image img {
+    width: 100%;
+    border-radius: 10px; /* optionnel, pour coins arrondis */
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+    </style>
+</head>
+<body>
+
+ <header class="header">
+        <img src="images/p.jpeg" alt="Logo" class="logo">
+    </header>
+    <nav class="sidebar">
+<div class="chat-box">
+    <div class="message robot">
+        Bonjour <span th:text="${nomUtilisateur}"></span>, comment puis-je vous aider ?
+    </div>
+  
+    
+    
+
+    <form id="alerteForm" th:action="@{/alerte}" method="post" style="display: none;">
+        <input type="hidden" name="type" id="typeFinal">
+        <input type="hidden" name="adresse" id="adresseFinal">
+        <button type="submit" style="display: none;" id="submitFinal"></button>
+    </form>
+
+    <div class="message user" id="userTypeChoice" style="display:none;"></div>
+
+    <div class="message robot" id="askType">
+        Je souhaite :
+        <select id="typeAlerte">
+            <option value="" disabled selected>Choisir un type d'alerte</option>
+            <option value="vol">Vol</option>
+            <option value="viol">Viol</option>
+            <option value="braquage">Braquage</option>
+            <option value="présence de personne armée">Présence de personne armée</option>
+        </select>
+    </div>
+
+    <div class="message robot" id="askLocation" style="display:none;">
+        Veuillez nous indiquer le lieu de l’incident :
+        <input type="text" id="adresse" placeholder="Entrez l’adresse">
+    </div>
+
+    <div class="message user" id="userLocationResponse" style="display:none;"></div>
+
+    <div class="message robot" id="confirmationMessage" style="display:none;">
+        Merci. Les services de l’ordre sont en route 🚔
+    </div>
+</div>
+
+ </nav>
+    <div class="main-content">
+    <img src="images/Gra.jpg" alt="Image principale">
+</div>
+
+<script>
+    const typeAlerte = document.getElementById('typeAlerte');
+    const adresseInput = document.getElementById('adresse');
+    const askLocation = document.getElementById('askLocation');
+    const confirmation = document.getElementById('confirmationMessage');
+    const userTypeChoice = document.getElementById('userTypeChoice');
+    const userLocationResponse = document.getElementById('userLocationResponse');
+    const form = document.getElementById('alerteForm');
+    const typeFinal = document.getElementById('typeFinal');
+    const adresseFinal = document.getElementById('adresseFinal');
+    const submitFinal = document.getElementById('submitFinal');
+
+    typeAlerte.addEventListener('change', function () {
+        const choix = this.value;
+        userTypeChoice.style.display = "block";
+        userTypeChoice.innerText = "Je souhaite signaler un " + choix;
+        askLocation.style.display = "block";
+        typeFinal.value = choix;
+    });
+
+    adresseInput.addEventListener('change', function () {
+        const lieu = this.value;
+        userLocationResponse.innerText = lieu;
+        userLocationResponse.style.display = "block";
+        confirmation.style.display = "block";
+        adresseFinal.value = lieu;
+
+        setTimeout(() => {
+            submitFinal.click();
+        }, 3000); // envoie le formulaire après 3s
+    });
+</script>
+
+</body>
+</html>
